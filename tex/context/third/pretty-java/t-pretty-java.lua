@@ -1,5 +1,5 @@
 -- Copyright 2013 Renaud Aubin <root@renaud.io>
--- Time-stamp: <2013-04-19 20:43:34>
+-- Time-stamp: <2013-04-20 00:57:28>
 -- This program is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
 -- the Free Software Foundation, either version 3 of the License, or
@@ -21,7 +21,7 @@ if not modules then modules = { } end modules ['t-pretty-java'] = {
     license   = "GNU General Public License version 3"
 }
 
-local P, S, V, R, patterns, tohash = lpeg.P, lpeg.S, lpeg.V, lpeg.R, lpeg.patterns, table.tohash
+local P, S, V, R, patterns = lpeg.P, lpeg.S, lpeg.V, lpeg.R, lpeg.patterns
 
 local context               = context
 local verbatim              = context.verbatim
@@ -31,176 +31,58 @@ local JavaSnippet           = context.JavaSnippet
 local startJavaSnippet      = context.startJavaSnippet
 local stopJavaSnippet       = context.stopJavaSnippet
 
-local JavaSnippetNamespace  = verbatim.JavaSnippetNamespace
-local JavaSnippetOperator   = verbatim.JavaSnippetOperator
-local JavaSnippetFunction   = verbatim.JavaSnippetFunction
-local JavaSnippetSComment   = verbatim.JavaSnippetSComment
-local JavaSnippetMComment   = verbatim.JavaSnippetMComment
-local JavaSnippetDecorator  = verbatim.JavaSnippetDecorator
-local JavaSnippetKeyword    = verbatim.JavaSnippetKeyword
-local JavaSnippetDecl       = verbatim.JavaSnippetDecl
-local JavaSnippetType       = verbatim.JavaSnippetType
-local JavaSnippetConstant   = verbatim.JavaSnippetConstant
-local JavaSnippetChar       = verbatim.JavaSnippetChar
-local JavaSnippetStr        = verbatim.JavaSnippetStr
-local JavaSnippetImport     = verbatim.JavaSnippetImport
-local JavaSnippetClass      = verbatim.JavaSnippetClass
-local JavaSnippetLabel      = verbatim.JavaSnippetLabel
-local JavaSnippetFloat      = verbatim.JavaSnippetFloat
-local JavaSnippetHex        = verbatim.JavaSnippetHex
-local JavaSnippetInt        = verbatim.JavaSnippetInt
-local JavaSnippetName       = verbatim.JavaSnippetName
+-- verbatim processing
+local JavaSnippetTradComment   = verbatim.JavaSnippetTradComment
+local JavaSnippetEolComment    = verbatim.JavaSnippetEolComment
+local JavaSnippetOperator      = verbatim.JavaSnippetOperator
 
 local handler = visualizers.newhandler {
    startinline  = function()  JavaSnippet(false,"{") end,
    stopinline   = function()  context("}") end,
    startdisplay = function()  startJavaSnippet() end,
-   stopdisplay  = function()  stopJavaSnippet() end ,
-   namespace    = function(s) JavaSnippetNamespace(s) end,
+   stopdisplay  = function()  stopJavaSnippet() end,
+   trad_comment = function(s) JavaSnippetTradComment(s) end,
+   eol_comment  = function(s) JavaSnippetEolComment(s) end,
    operator     = function(s) JavaSnippetOperator(s) end,
-   function_    = function(s) JavaSnippetFunction(s) ; texio.write_nl(s) end,
-   scomment     = function(s) JavaSnippetSComment(s) end,
-   mcomment     = function(s) JavaSnippetMComment(s) end,
-   decorator    = function(s) JavaSnippetDecorator(s) end,
-   keyword      = function(s) JavaSnippetKeyword(s) end,
-   declaration  = function(s) JavaSnippetDecl(s) end,
-   type         = function(s) JavaSnippetType(s) end,
-   constant     = function(s) JavaSnippetConstant(s) end,
-   char         = function(s) JavaSnippetChar(s) end,
-   str          = function(s) JavaSnippetStr(s) end,
-   import       = function(s) JavaSnippetImport(s) end,
-   class        = function(s) JavaSnippetClass(s) end,
-   label        = function(s) JavaSnippetLabel(s) end,
-   float        = function(s) JavaSnippetFloat(s) end,
-   hex          = function(s) JavaSnippetHex(s) end,
-   integer      = function(s) JavaSnippetInt(s) end,
-   name         = function(s) JavaSnippetName(s) end,
 }
 
+local operator = {
+   "=",">","<","!","~","?",":",
+   "==","<=",">=","!=","&&","||","++","--",
+   "+","-","*","/","&","|","^","%","<<",">>",">>>",
+   "+=","-=","*=","/=","&=","|=","^=","%=","<<=",">>=",">>>=",
+}
 
 -- http://docs.oracle.com/javase/specs/jls/se7/html/jls-18.html
 
-
-local keyword = {
-   "assert", "break", "case", "catch", "continue", "default", "do", "else", "finally", "for", "if",
-   "goto", "instanceof", "new", "return", "switch", "this", "throw", "try", "while",
-}
-
-local declaration = {
-   "abstract", "const", "enum", "extends", "final", "implements", "native", "private", "protected",
-   "public", "static", "strictfp", "super", "synchronized", "throws", "transient", "volatile",
-}
-
-local type = {
-   "boolean", "byte", "char", "double", "float", "int", "long", "short", "void",
-}
-
-local constant = {
-   "true", "false", "null",
-}
-
+local line        = patterns.line
+local whitespace  = patterns.whitespace
 local space       = patterns.space
-local anything    = patterns.anything
-local newline     = patterns.newline
-local emptyline   = patterns.emptyline
-local beginline   = patterns.beginline
-local somecontent = patterns.somecontent
 
-local comment     = P("//") * patterns.space^0 * (1 - patterns.newline)^0
-local incomment_open = P("/*")
-local incomment_close = P("*/")
-
-local name        = (patterns.letter + patterns.underscore)
-                  * (patterns.letter + patterns.underscore + patterns.digit)^0
-local boundary    = S('{}')
-
--- WIP
--- keyword
--- keyword_decl
--- keyword_type
--- decorator
--- method return_arguments + method_name + signature_start
--- text
--- singleline_comment
--- multiline_comment
--- package
-local pack = P("package") * patterns.whitespace^1
--- true false null
--- class / interface state
--- import state
-local import = P("import") * patterns.whitespace^1
--- string
--- char
-
--- operator
-local operator = S("~^*!%&[](){}<>|+=:;,./?-")
--- float →
-local float = patterns.float * ( S("eE")^1 * R("09")^1 )^0 * S("fd")^-1
--- hex → patterns.hexadecimal
-local hex = patterns.hexadecimal
--- integer → patterns.integer
-local integer = patterns.integer * S("L")^-1
-
--- patterns.propername usability?
-
---local method_name =
-local package_name  = R("az","__") * R("09","az", "__")^0
-
-local scomment = P("//") * (P(1) - patterns.newline)^1 * patterns.newline
+local eol_comment = P("//") * (P(1) - patterns.newline)^1 * patterns.newline
 
 local grammar = visualizers.newgrammar(
    "default",
    {
       "visualizer",
 
-      function_ = R("AZ","az","__") * R("09","AZ","az", "__")^0,
+      Operator = mp(handler, "operator", lpeg.oneof(operator)),
 
---      method =
---         patterns.beginline *
---         patterns.whitespace^0 *
---         R("az","AZ","__") * ( R("az","AZ","09","__") + S(".[]<>") )^0 + patterns.whitespace^1
---         mp(handler, "function_", function_) *
---         patterns.whitespace^0 * P("("),
+      TraditionalComment =
+         mp(handler, "trad_comment", P("/*")) *
+         (V("line") + V("whitespace") +  mp(handler, "trad_comment", (P(1) - P("*/"))))^0 *
+         mp(handler, "trad_comment", P("*/")),
 
-      package = mp(handler, "namespace", pack) *
-         (mp(handler,"default", package_name) *
-          mp(handler,"operator", patterns.period)
-         )^0 * mp(handler,"operator", package_name) * mp(handler,"operator", patterns.semicolon),
+      EolComment = mp(handler, "eol_comment", eol_comment),
 
-      import = mp(handler, "namespace", import) *
-         (mp(handler,"default", package_name) *
-          mp(handler,"operator", patterns.period))^0 *
-         mp(handler,"operator", R("AZ") * R("AZ","az","09")^0) * mp(handler,"operator", patterns.semicolon),
-
-      operator = mp(handler, "operator", operator),
-
-      keyword = mp(handler, "keyword", lpeg.oneof(keyword)),
-
-      declaration = mp(handler, "declaration", lpeg.oneof(declaration)),
-
-      type = mp(handler, "type", lpeg.oneof(type)),
-
-      constant = mp(handler, "constant", lpeg.oneof(constant)),
-
-      scomment = mp(handler, "scomment", scomment),
-
-      mcomment = mp(handler,"mcomment", P("/*")) *
-         ( V("line") + V("whitespace") + mp(handler, "mcomment", (P(1) - P("*/"))) )^0 *
-         mp(handler,"mcomment", P("*/")),
+      Comment =
+        V("TraditionalComment") + V("EolComment"),
 
       pattern =
---         V("method") +
-         V("scomment") +
-         V("mcomment") +
-         V("keyword") +
-         V("constant") +
-         V("package") +
-         V("import") +
+         V("Comment") +
+         V("Operator") +
          V("space") +
-         V("operator") +
          V("line") +
-         V("declaration") +
-         V("type") +
          V("default"),
 
       visualizer = V("pattern")^1

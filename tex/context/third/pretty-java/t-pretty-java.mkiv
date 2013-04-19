@@ -1,5 +1,5 @@
 %C Copyright 2013 Renaud Aubin <root@renaud.io>
-%C Time-stamp: <2013-04-19 20:34:12>
+%C Time-stamp: <2013-04-20 00:56:30>
 %C This program is free software: you can redistribute it and/or modify
 %C it under the terms of the GNU General Public License as published by
 %C the Free Software Foundation, either version 3 of the License, or
@@ -75,47 +75,14 @@
 \definecolor[base00] [base0]
 
 % WIP
-\definecolor [function]    [base01]
-\definecolor [scomment]    [base01]
-\definecolor [mcomment]    [base01]
-\definecolor [decorator]   [orange]
-\definecolor [keyword]     [green]
-\definecolor [declaration] [magenta]
-\definecolor [type]        [yellow]
-\definecolor [constant]    [cyan]
-\definecolor [operator]    [base00]
-\definecolor [char]        [cyan]
-\definecolor [str]         [cyan]
-\definecolor [import]      [green]
-\definecolor [class]       [base02]
-\definecolor [namespace]   [violet]
-\definecolor [label]       [red]
-\definecolor [float]       [red]
-\definecolor [hex]         [red]
-\definecolor [integer]     [red]
-\definecolor [name]        [red]
-% TODO: package and import sub
+\definecolor [trad_comment][base01]
+\definecolor [eol_comment] [base01]
+\definecolor [operator]    [yellow]
 
 \definestartstop[JavaSnippet][DefaultSnippet]
-\definestartstop[JavaSnippetNamespace][\c!color=namespace,\c!style=]
+\definestartstop[JavaSnippetTradComment][\c!color=trad_comment,\c!style=]
+\definestartstop[JavaSnippetEolComment][\c!color=eol_comment,\c!style=]
 \definestartstop[JavaSnippetOperator][\c!color=operator,\c!style=]
-\definestartstop[JavaSnippetFunction][\c!color=function,\c!style=]
-\definestartstop[JavaSnippetSComment][\c!color=scomment,\c!style=]
-\definestartstop[JavaSnippetMComment][\c!color=mcomment,\c!style=]
-\definestartstop[JavaSnippetDecorator][\c!color=decorator,\c!style=]
-\definestartstop[JavaSnippetKeyword][\c!color=keyword,\c!style=]
-\definestartstop[JavaSnippetDecl][\c!color=declaration,\c!style=]
-\definestartstop[JavaSnippetType][\c!color=type,\c!style=]
-\definestartstop[JavaSnippetConstant][\c!color=constant,\c!style=]
-\definestartstop[JavaSnippetChar][\c!color=char,\c!style=]
-\definestartstop[JavaSnippetStr][\c!color=str,\c!style=]
-\definestartstop[JavaSnippetImport][\c!color=import,\c!style=]
-\definestartstop[JavaSnippetClass][\c!color=class,\c!style=]
-\definestartstop[JavaSnippetLabel][\c!color=label,\c!style=]
-\definestartstop[JavaSnippetFloat][\c!color=float,\c!style=]
-\definestartstop[JavaSnippetHex][\c!color=hex,\c!style=]
-\definestartstop[JavaSnippetInt][\c!color=integer,\c!style=]
-\definestartstop[JavaSnippetName][\c!color=name,\c!style=]
 
 \definetyping[Java][\c!option=java]
 
