@@ -1,5 +1,5 @@
 -- Copyright 2013 Renaud Aubin <root@renaud.io>
--- Time-stamp: <2013-04-20 00:57:28>
+-- Time-stamp: <2013-04-20 01:04:53>
 -- This program is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
 -- the Free Software Foundation, either version 3 of the License, or
@@ -35,6 +35,7 @@ local stopJavaSnippet       = context.stopJavaSnippet
 local JavaSnippetTradComment   = verbatim.JavaSnippetTradComment
 local JavaSnippetEolComment    = verbatim.JavaSnippetEolComment
 local JavaSnippetOperator      = verbatim.JavaSnippetOperator
+local JavaSnippetSeparator     = verbatim.JavaSnippetSeparator
 
 local handler = visualizers.newhandler {
    startinline  = function()  JavaSnippet(false,"{") end,
@@ -44,6 +45,7 @@ local handler = visualizers.newhandler {
    trad_comment = function(s) JavaSnippetTradComment(s) end,
    eol_comment  = function(s) JavaSnippetEolComment(s) end,
    operator     = function(s) JavaSnippetOperator(s) end,
+   separator    = function(s) JavaSnippetSeparator(s) end,
 }
 
 local operator = {
@@ -52,6 +54,8 @@ local operator = {
    "+","-","*","/","&","|","^","%","<<",">>",">>>",
    "+=","-=","*=","/=","&=","|=","^=","%=","<<=",">>=",">>>=",
 }
+
+local separator = S("(){}[];,.")
 
 -- http://docs.oracle.com/javase/specs/jls/se7/html/jls-18.html
 
@@ -65,6 +69,8 @@ local grammar = visualizers.newgrammar(
    "default",
    {
       "visualizer",
+
+      Separator = mp(handler, "separator", separator),
 
       Operator = mp(handler, "operator", lpeg.oneof(operator)),
 
@@ -81,6 +87,7 @@ local grammar = visualizers.newgrammar(
       pattern =
          V("Comment") +
          V("Operator") +
+         V("Separator") +
          V("space") +
          V("line") +
          V("default"),
