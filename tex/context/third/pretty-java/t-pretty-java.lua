@@ -48,24 +48,24 @@ local keyword = {
    "goto", "instanceof", "new", "return", "switch", "this", "throw", "try", "while",
 }
 
-local declaration = tohash {
+local declaration = {
    "abstract", "const", "enum", "extends", "final", "implements", "native", "private", "protected",
    "public", "static", "strictfp", "super", "synchronized", "throws", "transient", "volatile",
 }
 
-local type = tohash {
+local type = {
    "boolean", "byte", "char", "double", "float", "int", "long", "short", "void",
 }
 
-local constant = tohash {
+local constant = {
    "true", "false", "null",
 }
 
-local namespace = tohash {
+local namespace = {
    "import",
 }
 
-local preproc = tohash {
+local preproc = {
    "define", "include", "pragma", "if", "ifdef", "ifndef", "elif", "endif",
    "defined",
 }
