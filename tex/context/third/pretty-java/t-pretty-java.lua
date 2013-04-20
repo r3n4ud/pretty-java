@@ -1,5 +1,5 @@
 -- Copyright 2013 Renaud Aubin <root@renaud.io>
--- Time-stamp: <2013-04-20 16:33:16>
+-- Time-stamp: <2013-04-20 17:05:43>
 -- This program is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
 -- the Free Software Foundation, either version 3 of the License, or
@@ -39,6 +39,8 @@ local JavaSnippetSeparator     = verbatim.JavaSnippetSeparator
 local JavaSnippetPackage       = verbatim.JavaSnippetPackage
 local JavaSnippetPackageTerm   = verbatim.JavaSnippetPackageTerm
 local JavaSnippetImport        = verbatim.JavaSnippetImport
+local JavaSnippetImportId      = verbatim.JavaSnippetImportId
+local JavaSnippetImportTerm    = verbatim.JavaSnippetImportTerm
 local JavaSnippetModifier      = verbatim.JavaSnippetModifier
 local JavaSnippetChar          = verbatim.JavaSnippetChar
 local JavaSnippetString        = verbatim.JavaSnippetString
@@ -58,6 +60,8 @@ local handler = visualizers.newhandler {
    package      = function(s) JavaSnippetPackage(s) end,
    package_term = function(s) JavaSnippetPackageTerm(s) end,
    import       = function(s) JavaSnippetImport(s) end,
+   import_id    = function(s) JavaSnippetImportId(s) end,
+   import_term  = function(s) JavaSnippetImportTerm(s) end,
    modifier     = function(s) JavaSnippetModifier(s) end,
    char         = function(s) JavaSnippetChar(s) end,
    string_      = function(s) JavaSnippetString(s) end,
@@ -153,8 +157,8 @@ local grammar = visualizers.newgrammar(
       --    import [static] Identifier { . Identifier } [. *] ;
       ImportDeclaration = mp(handler, "import", P("import")) * V("space")^1 *
          (mp(handler, "modifier", P("static")) * V("space")^1)^-1 *
-         (mp(handler, "default", identifier) * mp(handler, "separator", P(".")))^0 *
-         ( mp(handler, "package_term", identifier) + mp(handler, "operator", P("*")) ) *
+         (mp(handler, "import_id", identifier) * mp(handler, "separator", P(".")))^0 *
+         ( mp(handler, "import_term", identifier) + mp(handler, "operator", P("*")) ) *
          mp(handler, "separator", P(";")),
 
       Package =  mp(handler, "package", P("package")) * V("space")^1 *
