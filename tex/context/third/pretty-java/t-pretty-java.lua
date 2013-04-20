@@ -1,5 +1,5 @@
 -- Copyright 2013 Renaud Aubin <root@renaud.io>
--- Time-stamp: <2013-04-20 14:48:27>
+-- Time-stamp: <2013-04-20 16:33:16>
 -- This program is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
 -- the Free Software Foundation, either version 3 of the License, or
@@ -40,6 +40,11 @@ local JavaSnippetPackage       = verbatim.JavaSnippetPackage
 local JavaSnippetPackageTerm   = verbatim.JavaSnippetPackageTerm
 local JavaSnippetImport        = verbatim.JavaSnippetImport
 local JavaSnippetModifier      = verbatim.JavaSnippetModifier
+local JavaSnippetChar          = verbatim.JavaSnippetChar
+local JavaSnippetString        = verbatim.JavaSnippetString
+local JavaSnippetBoolean       = verbatim.JavaSnippetBoolean
+local JavaSnippetNull          = verbatim.JavaSnippetNull
+local JavaSnippetBasicType     = verbatim.JavaSnippetBasicType
 
 local handler = visualizers.newhandler {
    startinline  = function()  JavaSnippet(false,"{") end,
@@ -54,6 +59,11 @@ local handler = visualizers.newhandler {
    package_term = function(s) JavaSnippetPackageTerm(s) end,
    import       = function(s) JavaSnippetImport(s) end,
    modifier     = function(s) JavaSnippetModifier(s) end,
+   char         = function(s) JavaSnippetChar(s) end,
+   string_      = function(s) JavaSnippetString(s) end,
+   boolean      = function(s) JavaSnippetBoolean(s) end,
+   null         = function(s) JavaSnippetNull(s) end,
+   basic_type   = function(s) JavaSnippetBasicType(s) end,
 }
 
 local operator = {
@@ -68,6 +78,10 @@ local separator = S("(){}[];,.")
 local modifier = {
    "public", "protected", "private", "static", "abstract", "final", "native", "synchronized",
    "transient", "volatile", "strictfp",
+}
+
+local basic_type = {
+   "byte", "short", "char", "int", "long", "float", "double", "boolean",
 }
 
 local keyword = {
@@ -94,6 +108,8 @@ local eol_comment = P("//") * (P(1) - patterns.newline)^1 * patterns.newline
 local java_letter = patterns.letter + P("_") + P("$")
 local java_digit  = patterns.digit
 
+local char_literal = patterns.singlequoted
+local string_literal = patterns.doublequoted
 local boolean_literal = P("true") + P("false")
 local null_literal    = P("null")
 local identifier = (( java_letter * (java_letter + java_digit)^0 )) -
@@ -120,6 +136,15 @@ local grammar = visualizers.newgrammar(
          mp(handler, "trad_comment", P("*/")),
 
       EolComment = mp(handler, "eol_comment", eol_comment),
+
+      Modifier = mp(handler, "modifier", lpeg.oneof(modifier)),
+      BasicType = mp(handler, "basic_type", lpeg.oneof(basic_type)),
+
+      Character = mp(handler, "char", char_literal),
+      String = mp(handler, "string_", string_literal),
+      Boolean = mp(handler, "boolean", boolean_literal),
+      Null = mp(handler, "null", null_literal),
+      Literal = V("Character") + V("String") + V("Boolean") + V("Null"),
 
       Comment =
         V("TraditionalComment") + V("EolComment"),
@@ -163,8 +188,11 @@ local grammar = visualizers.newgrammar(
          V("Package") +
          V("ImportDeclaration") +
          V("Comment") +
+         V("Literal") +
          V("Operator") +
          V("Separator") +
+         V("BasicType") +
+         V("Modifier") +
          V("space") +
          V("line") +
          V("default"),
