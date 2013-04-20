@@ -1,5 +1,5 @@
 -- Copyright 2013 Renaud Aubin <root@renaud.io>
--- Time-stamp: <2013-04-20 14:17:25>
+-- Time-stamp: <2013-04-20 14:48:27>
 -- This program is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
 -- the Free Software Foundation, either version 3 of the License, or
@@ -38,6 +38,8 @@ local JavaSnippetOperator      = verbatim.JavaSnippetOperator
 local JavaSnippetSeparator     = verbatim.JavaSnippetSeparator
 local JavaSnippetPackage       = verbatim.JavaSnippetPackage
 local JavaSnippetPackageTerm   = verbatim.JavaSnippetPackageTerm
+local JavaSnippetImport        = verbatim.JavaSnippetImport
+local JavaSnippetModifier      = verbatim.JavaSnippetModifier
 
 local handler = visualizers.newhandler {
    startinline  = function()  JavaSnippet(false,"{") end,
@@ -50,6 +52,8 @@ local handler = visualizers.newhandler {
    separator    = function(s) JavaSnippetSeparator(s) end,
    package      = function(s) JavaSnippetPackage(s) end,
    package_term = function(s) JavaSnippetPackageTerm(s) end,
+   import       = function(s) JavaSnippetImport(s) end,
+   modifier     = function(s) JavaSnippetModifier(s) end,
 }
 
 local operator = {
@@ -120,6 +124,14 @@ local grammar = visualizers.newgrammar(
       Comment =
         V("TraditionalComment") + V("EolComment"),
 
+      -- ImportDeclaration:
+      --    import [static] Identifier { . Identifier } [. *] ;
+      ImportDeclaration = mp(handler, "import", P("import")) * V("space")^1 *
+         (mp(handler, "modifier", P("static")) * V("space")^1)^-1 *
+         (mp(handler, "default", identifier) * mp(handler, "separator", P(".")))^0 *
+         ( mp(handler, "package_term", identifier) + mp(handler, "operator", P("*")) ) *
+         mp(handler, "separator", P(";")),
+
       Package =  mp(handler, "package", P("package")) * V("space")^1 *
          (mp(handler, "default", identifier) * mp(handler, "separator", P(".")))^0 *
          mp(handler, "package_term", identifier) * mp(handler, "separator", P(";")),
@@ -144,14 +156,12 @@ local grammar = visualizers.newgrammar(
       --     [[Annotations] package QualifiedIdentifier ;]
       --                                 {ImportDeclaration} {TypeDeclaration}
 
-      -- CompilationUnit =
       --    ( V("Annotations")^-1 * V("whitespace")^0 *
-      --      V("Package") )^-1 *
-      --    V("whitespace")^0 * V("ImportDeclaration")^0 *
       --    V("whitespace")^0 * V("TypeDeclaration"),
 
       pattern =
          V("Package") +
+         V("ImportDeclaration") +
          V("Comment") +
          V("Operator") +
          V("Separator") +
