@@ -1,5 +1,5 @@
 -- Copyright 2013 Renaud Aubin <root@renaud.io>
--- Time-stamp: <2013-04-20 01:04:53>
+-- Time-stamp: <2013-04-20 14:17:25>
 -- This program is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
 -- the Free Software Foundation, either version 3 of the License, or
@@ -36,6 +36,8 @@ local JavaSnippetTradComment   = verbatim.JavaSnippetTradComment
 local JavaSnippetEolComment    = verbatim.JavaSnippetEolComment
 local JavaSnippetOperator      = verbatim.JavaSnippetOperator
 local JavaSnippetSeparator     = verbatim.JavaSnippetSeparator
+local JavaSnippetPackage       = verbatim.JavaSnippetPackage
+local JavaSnippetPackageTerm   = verbatim.JavaSnippetPackageTerm
 
 local handler = visualizers.newhandler {
    startinline  = function()  JavaSnippet(false,"{") end,
@@ -46,6 +48,8 @@ local handler = visualizers.newhandler {
    eol_comment  = function(s) JavaSnippetEolComment(s) end,
    operator     = function(s) JavaSnippetOperator(s) end,
    separator    = function(s) JavaSnippetSeparator(s) end,
+   package      = function(s) JavaSnippetPackage(s) end,
+   package_term = function(s) JavaSnippetPackageTerm(s) end,
 }
 
 local operator = {
@@ -57,18 +61,50 @@ local operator = {
 
 local separator = S("(){}[];,.")
 
+local modifier = {
+   "public", "protected", "private", "static", "abstract", "final", "native", "synchronized",
+   "transient", "volatile", "strictfp",
+}
+
+local keyword = {
+   "abstract" ,  "continue" ,  "for"        ,  "new"       ,  "switch",
+   "assert"   ,  "default"  ,  "if"         ,  "package"   ,  "synchronized",
+   "boolean"  ,  "do"       ,  "goto"       ,  "private"   ,  "this",
+   "break"    ,  "double"   ,  "implements" ,  "protected" ,  "throw",
+   "byte"     ,  "else"     ,  "import"     ,  "public"    ,  "throws",
+   "case"     ,  "enum"     ,  "instanceof" ,  "return"    ,  "transient",
+   "catch"    ,  "extends"  ,  "int"        ,  "short"     ,  "try",
+   "char"     ,  "final"    ,  "interface"  ,  "static"    ,  "void",
+   "class"    ,  "finally"  ,  "long"       ,  "strictfp"  ,  "volatile",
+   "const"    ,  "float"    ,  "native"     ,  "super"     ,  "while",
+}
+
 -- http://docs.oracle.com/javase/specs/jls/se7/html/jls-18.html
 
 local line        = patterns.line
 local whitespace  = patterns.whitespace
 local space       = patterns.space
-
+local spacer      = patterns.spacer
 local eol_comment = P("//") * (P(1) - patterns.newline)^1 * patterns.newline
+
+local java_letter = patterns.letter + P("_") + P("$")
+local java_digit  = patterns.digit
+
+local boolean_literal = P("true") + P("false")
+local null_literal    = P("null")
+local identifier = (( java_letter * (java_letter + java_digit)^0 )) -
+   (lpeg.oneof(keyword) + boolean_literal + null_literal)
 
 local grammar = visualizers.newgrammar(
    "default",
    {
       "visualizer",
+
+--      Annotation = ,
+
+--      Modifier =
+         -- V("Annotation") +
+--         ,
 
       Separator = mp(handler, "separator", separator),
 
@@ -84,7 +120,38 @@ local grammar = visualizers.newgrammar(
       Comment =
         V("TraditionalComment") + V("EolComment"),
 
+      Package =  mp(handler, "package", P("package")) * V("space")^1 *
+         (mp(handler, "default", identifier) * mp(handler, "separator", P(".")))^0 *
+         mp(handler, "package_term", identifier) * mp(handler, "separator", P(";")),
+
+      -- Identifier:
+      --     IdentifierChars but not a Keyword or BooleanLiteral or NullLiteral
+--      Identifiers = ,
+
+      -- IdentifierChars:
+      --     JavaLetter
+      --     IdentifierChars JavaLetterOrDigit
+--      IdentifierChars =  -- simplified. Ask Hans for utf8 letters-only pattern.
+--         (java_letter * (java_letter + java_digit)^0) - lpeg.oneof(),
+
+      -- JavaLetter:
+      --     any Unicode character that is a Java letter (see below)
+
+      -- JavaLetterOrDigit:
+      --     any Unicode character that is a Java letter-or-digit (see below)
+
+      -- CompilationUnit:
+      --     [[Annotations] package QualifiedIdentifier ;]
+      --                                 {ImportDeclaration} {TypeDeclaration}
+
+      -- CompilationUnit =
+      --    ( V("Annotations")^-1 * V("whitespace")^0 *
+      --      V("Package") )^-1 *
+      --    V("whitespace")^0 * V("ImportDeclaration")^0 *
+      --    V("whitespace")^0 * V("TypeDeclaration"),
+
       pattern =
+         V("Package") +
          V("Comment") +
          V("Operator") +
          V("Separator") +
