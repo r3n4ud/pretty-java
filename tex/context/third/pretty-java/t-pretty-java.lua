@@ -1,5 +1,5 @@
 -- Copyright 2013 Renaud Aubin <root@renaud.io>
--- Time-stamp: <2013-04-20 17:05:43>
+-- Time-stamp: <2013-04-20 17:23:15>
 -- This program is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
 -- the Free Software Foundation, either version 3 of the License, or
@@ -47,6 +47,7 @@ local JavaSnippetString        = verbatim.JavaSnippetString
 local JavaSnippetBoolean       = verbatim.JavaSnippetBoolean
 local JavaSnippetNull          = verbatim.JavaSnippetNull
 local JavaSnippetBasicType     = verbatim.JavaSnippetBasicType
+local JavaSnippetKeyword       = verbatim.JavaSnippetKeyword
 
 local handler = visualizers.newhandler {
    startinline  = function()  JavaSnippet(false,"{") end,
@@ -68,6 +69,7 @@ local handler = visualizers.newhandler {
    boolean      = function(s) JavaSnippetBoolean(s) end,
    null         = function(s) JavaSnippetNull(s) end,
    basic_type   = function(s) JavaSnippetBasicType(s) end,
+   keyword      = function(s) JavaSnippetKeyword(s) end,
 }
 
 local operator = {
@@ -100,6 +102,8 @@ local keyword = {
    "class"    ,  "finally"  ,  "long"       ,  "strictfp"  ,  "volatile",
    "const"    ,  "float"    ,  "native"     ,  "super"     ,  "while",
 }
+
+local other_keyword = lpeg.oneof(keyword) - lpeg.oneof(modifier) - lpeg.oneof(basic_type)
 
 -- http://docs.oracle.com/javase/specs/jls/se7/html/jls-18.html
 
@@ -143,6 +147,7 @@ local grammar = visualizers.newgrammar(
 
       Modifier = mp(handler, "modifier", lpeg.oneof(modifier)),
       BasicType = mp(handler, "basic_type", lpeg.oneof(basic_type)),
+      Keyword = mp(handler, "keyword", other_keyword),
 
       Character = mp(handler, "char", char_literal),
       String = mp(handler, "string_", string_literal),
@@ -197,6 +202,7 @@ local grammar = visualizers.newgrammar(
          V("Separator") +
          V("BasicType") +
          V("Modifier") +
+         V("Keyword") +
          V("space") +
          V("line") +
          V("default"),
