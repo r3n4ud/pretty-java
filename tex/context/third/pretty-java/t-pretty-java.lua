@@ -1,5 +1,5 @@
 -- Copyright 2013 Renaud Aubin <root@renaud.io>
--- Time-stamp: <2013-04-20 17:23:15>
+-- Time-stamp: <2013-04-22 21:13:44>
 -- This program is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
 -- the Free Software Foundation, either version 3 of the License, or
@@ -158,6 +158,28 @@ local grammar = visualizers.newgrammar(
       Comment =
         V("TraditionalComment") + V("EolComment"),
 
+      Type = mp(handler, "import_id", identifier),
+
+      TypeList = V("default"),
+
+      -- TypeParameter = mp(handler, "import_id", identifier) *
+      --    ( V("whitespace")^1 * mp(handler, "keyword", P("extends")) * V("whitespace")^1 *
+      --      mp(handler, "import_id", identifier), -- indentifier is not enough!!!
+
+      TypeParameters = P("<") * mp(handler, "import_id", identifier) *
+         (P(",") * V("whitespace")^1 * mp(handler, "import_id", identifier))^0 *
+         P(">"),
+
+      ClassDeclaration = (V("Modifier") * V("whitespace"))^0 *
+         mp(handler, "keyword", P("class")) * V("whitespace") *
+         mp(handler, "import_id", identifier) * V("whitespace") *
+         -- V("TypeParameters")^-1 *
+         (mp(handler, "keyword", P("extends")) * V("whitespace") *
+          V("Type"))^-1 * V("whitespace") *
+         (mp(handler, "keyword", P("implements")) * V("whitespace")^1 )^-1, -- *
+          --     V("TypeList"),
+
+
       -- ImportDeclaration:
       --    import [static] Identifier { . Identifier } [. *] ;
       ImportDeclaration = mp(handler, "import", P("import")) * V("space")^1 *
@@ -196,6 +218,7 @@ local grammar = visualizers.newgrammar(
       pattern =
          V("Package") +
          V("ImportDeclaration") +
+         V("ClassDeclaration") +
          V("Comment") +
          V("Literal") +
          V("Operator") +
