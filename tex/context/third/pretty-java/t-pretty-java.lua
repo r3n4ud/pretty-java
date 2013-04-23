@@ -1,5 +1,5 @@
 -- Copyright 2013 Renaud Aubin <root@renaud.io>
--- Time-stamp: <2013-04-22 21:13:44>
+-- Time-stamp: <2013-04-23 19:09:47>
 -- This program is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
 -- the Free Software Foundation, either version 3 of the License, or
@@ -111,7 +111,7 @@ local line        = patterns.line
 local whitespace  = patterns.whitespace
 local space       = patterns.space
 local spacer      = patterns.spacer
-local eol_comment = P("//") * (P(1) - patterns.newline)^1 * patterns.newline
+local eol_comment = P("//") * (P(1) - patterns.newline)^1 * #patterns.newline
 
 local java_letter = patterns.letter + P("_") + P("$")
 local java_digit  = patterns.digit
