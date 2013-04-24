@@ -1,5 +1,5 @@
 -- Copyright 2013 Renaud Aubin <root@renaud.io>
--- Time-stamp: <2013-04-23 19:09:47>
+-- Time-stamp: <2013-04-24 19:30:03>
 -- This program is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
 -- the Free Software Foundation, either version 3 of the License, or
@@ -72,38 +72,38 @@ local handler = visualizers.newhandler {
    keyword      = function(s) JavaSnippetKeyword(s) end,
 }
 
-local operator = {
+local operator = lpeg.oneof({
    "=",">","<","!","~","?",":",
    "==","<=",">=","!=","&&","||","++","--",
    "+","-","*","/","&","|","^","%","<<",">>",">>>",
    "+=","-=","*=","/=","&=","|=","^=","%=","<<=",">>=",">>>=",
-}
+})
 
 local separator = S("(){}[];,.")
 
-local modifier = {
-   "public", "protected", "private", "static", "abstract", "final", "native", "synchronized",
-   "transient", "volatile", "strictfp",
-}
+local modifier = lpeg.oneof({
+                               "public", "protected", "private", "static", "abstract", "final",
+                               "native", "synchronized", "transient", "volatile", "strictfp",
+})
 
-local basic_type = {
-   "byte", "short", "char", "int", "long", "float", "double", "boolean",
-}
+local basic_type = lpeg.oneof({ "byte", "short", "char", "int", "long", "float", "double",
+                                "boolean",
+                              })
 
-local keyword = {
-   "abstract" ,  "continue" ,  "for"        ,  "new"       ,  "switch",
-   "assert"   ,  "default"  ,  "if"         ,  "package"   ,  "synchronized",
-   "boolean"  ,  "do"       ,  "goto"       ,  "private"   ,  "this",
-   "break"    ,  "double"   ,  "implements" ,  "protected" ,  "throw",
-   "byte"     ,  "else"     ,  "import"     ,  "public"    ,  "throws",
-   "case"     ,  "enum"     ,  "instanceof" ,  "return"    ,  "transient",
-   "catch"    ,  "extends"  ,  "int"        ,  "short"     ,  "try",
-   "char"     ,  "final"    ,  "interface"  ,  "static"    ,  "void",
-   "class"    ,  "finally"  ,  "long"       ,  "strictfp"  ,  "volatile",
-   "const"    ,  "float"    ,  "native"     ,  "super"     ,  "while",
-}
+local keyword = lpeg.oneof({
+                              "abstract" ,  "continue" ,  "for"        ,  "new"       ,  "switch",
+                              "assert"   ,  "default"  ,  "if"         ,  "package"   ,  "synchronized",
+                              "boolean"  ,  "do"       ,  "goto"       ,  "private"   ,  "this",
+                              "break"    ,  "double"   ,  "implements" ,  "protected" ,  "throw",
+                              "byte"     ,  "else"     ,  "import"     ,  "public"    ,  "throws",
+                              "case"     ,  "enum"     ,  "instanceof" ,  "return"    ,  "transient",
+                              "catch"    ,  "extends"  ,  "int"        ,  "short"     ,  "try",
+                              "char"     ,  "final"    ,  "interface"  ,  "static"    ,  "void",
+                              "class"    ,  "finally"  ,  "long"       ,  "strictfp"  ,  "volatile",
+                              "const"    ,  "float"    ,  "native"     ,  "super"     ,  "while",
+                           })
 
-local other_keyword = lpeg.oneof(keyword) - lpeg.oneof(modifier) - lpeg.oneof(basic_type)
+local other_keyword = keyword - modifier - basic_type
 
 -- http://docs.oracle.com/javase/specs/jls/se7/html/jls-18.html
 
@@ -121,7 +121,7 @@ local string_literal = patterns.doublequoted
 local boolean_literal = P("true") + P("false")
 local null_literal    = P("null")
 local identifier = (( java_letter * (java_letter + java_digit)^0 )) -
-   (lpeg.oneof(keyword) + boolean_literal + null_literal)
+   (keyword + boolean_literal + null_literal)
 
 local grammar = visualizers.newgrammar(
    "default",
@@ -136,7 +136,7 @@ local grammar = visualizers.newgrammar(
 
       Separator = mp(handler, "separator", separator),
 
-      Operator = mp(handler, "operator", lpeg.oneof(operator)),
+      Operator = mp(handler, "operator", operator),
 
       TraditionalComment =
          mp(handler, "trad_comment", P("/*")) *
@@ -145,8 +145,8 @@ local grammar = visualizers.newgrammar(
 
       EolComment = mp(handler, "eol_comment", eol_comment),
 
-      Modifier = mp(handler, "modifier", lpeg.oneof(modifier)),
-      BasicType = mp(handler, "basic_type", lpeg.oneof(basic_type)),
+      Modifier = mp(handler, "modifier", modifier),
+      BasicType = mp(handler, "basic_type", basic_type),
       Keyword = mp(handler, "keyword", other_keyword),
 
       Character = mp(handler, "char", char_literal),
