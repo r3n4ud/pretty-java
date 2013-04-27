@@ -2,7 +2,7 @@
 # pretty-java: a ConTeXt MkIV java syntax highlighting third party module
 
 * [Homepage](https://github.com/nibua-r/pretty-java#readme)
-* [Issues](https://github.com/nibua-r/pretty/issues)
+* [Issues](https://github.com/nibua-r/pretty-java/issues)
 * [Email](mailto:root at renaud.io)
 
 ## Description
