@@ -1,5 +1,5 @@
 -- Copyright 2013 Renaud Aubin <root@renaud.io>
--- Time-stamp: <2013-04-24 19:30:03>
+-- Time-stamp: <2013-04-27 13:35:08>
 -- This program is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
 -- the Free Software Foundation, either version 3 of the License, or
@@ -30,6 +30,11 @@ local mp                    = visualizers.makepattern
 local JavaSnippet           = context.JavaSnippet
 local startJavaSnippet      = context.startJavaSnippet
 local stopJavaSnippet       = context.stopJavaSnippet
+
+function show(s)
+   texio.write_nl(s)
+   return s
+end
 
 -- verbatim processing
 local JavaSnippetTradComment   = verbatim.JavaSnippetTradComment
@@ -120,8 +125,8 @@ local char_literal = patterns.singlequoted
 local string_literal = patterns.doublequoted
 local boolean_literal = P("true") + P("false")
 local null_literal    = P("null")
-local identifier = (( java_letter * (java_letter + java_digit)^0 )) -
-   (keyword + boolean_literal + null_literal)
+local identifier = ( java_letter * (java_letter + java_digit)^0 ) -
+   ((keyword + boolean_literal + null_literal) * (1 - (java_letter + java_digit)))
 
 local grammar = visualizers.newgrammar(
    "default",
@@ -192,6 +197,16 @@ local grammar = visualizers.newgrammar(
          (mp(handler, "default", identifier) * mp(handler, "separator", P(".")))^0 *
          mp(handler, "package_term", identifier) * mp(handler, "separator", P(";")),
 
+      FieldDeclaration = (mp(handler, "modifier", modifier) * V("whitespace"))^1 *
+         ( mp(handler, "basic_type", basic_type) +
+           mp(handler, "import_id", identifier) +
+           mp(handler, "keyword", P("void"))
+         ) *
+         V("whitespace")  *
+         mp(handler, "basic_type", R("AZ","az","__") * R("09","AZ","az", "__")^0),
+
+      Identifier = mp(handler, "default", identifier / show) ,
+
       -- Identifier:
       --     IdentifierChars but not a Keyword or BooleanLiteral or NullLiteral
 --      Identifiers = ,
@@ -216,6 +231,7 @@ local grammar = visualizers.newgrammar(
       --    V("whitespace")^0 * V("TypeDeclaration"),
 
       pattern =
+         V("FieldDeclaration") +
          V("Package") +
          V("ImportDeclaration") +
          V("ClassDeclaration") +
@@ -223,6 +239,7 @@ local grammar = visualizers.newgrammar(
          V("Literal") +
          V("Operator") +
          V("Separator") +
+         V("Identifier") +
          V("BasicType") +
          V("Modifier") +
          V("Keyword") +
