@@ -1,4 +1,6 @@
 <!--- coding: utf-8; fill-column: 80 --->
+![pretty-java](https://raw.github.com/nibua-r/pretty-java/rework-jls-se7/pretty-java_greeter.png)
+
 # pretty-java: a ConTeXt MkIV java syntax highlighting third party module
 
 * [Homepage](https://github.com/nibua-r/pretty-java#readme)
