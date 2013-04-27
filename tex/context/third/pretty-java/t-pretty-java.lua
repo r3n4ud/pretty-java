@@ -1,5 +1,5 @@
 -- Copyright 2013 Renaud Aubin <root@renaud.io>
--- Time-stamp: <2013-04-27 13:35:08>
+-- Time-stamp: <2013-04-27 13:52:48>
 -- This program is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
 -- the Free Software Foundation, either version 3 of the License, or
@@ -53,6 +53,7 @@ local JavaSnippetBoolean       = verbatim.JavaSnippetBoolean
 local JavaSnippetNull          = verbatim.JavaSnippetNull
 local JavaSnippetBasicType     = verbatim.JavaSnippetBasicType
 local JavaSnippetKeyword       = verbatim.JavaSnippetKeyword
+local JavaSnippetConstant      = verbatim.JavaSnippetConstant
 
 local handler = visualizers.newhandler {
    startinline  = function()  JavaSnippet(false,"{") end,
@@ -75,6 +76,7 @@ local handler = visualizers.newhandler {
    null         = function(s) JavaSnippetNull(s) end,
    basic_type   = function(s) JavaSnippetBasicType(s) end,
    keyword      = function(s) JavaSnippetKeyword(s) end,
+   constant     = function(s) JavaSnippetConstant(s) end,
 }
 
 local operator = lpeg.oneof({
@@ -126,7 +128,9 @@ local string_literal = patterns.doublequoted
 local boolean_literal = P("true") + P("false")
 local null_literal    = P("null")
 local identifier = ( java_letter * (java_letter + java_digit)^0 ) -
-   ((keyword + boolean_literal + null_literal) * (1 - (java_letter + java_digit)))
+   ((keyword + boolean_literal + null_literal) * #(1 - (java_letter + java_digit)))
+
+local constant = R("AZ") * R("AZ", "__", "09")^0 * #(1 - (java_letter + java_digit))
 
 local grammar = visualizers.newgrammar(
    "default",
@@ -197,13 +201,15 @@ local grammar = visualizers.newgrammar(
          (mp(handler, "default", identifier) * mp(handler, "separator", P(".")))^0 *
          mp(handler, "package_term", identifier) * mp(handler, "separator", P(";")),
 
+      Constant = mp(handler, "constant", constant),
+
       FieldDeclaration = (mp(handler, "modifier", modifier) * V("whitespace"))^1 *
          ( mp(handler, "basic_type", basic_type) +
            mp(handler, "import_id", identifier) +
            mp(handler, "keyword", P("void"))
          ) *
          V("whitespace")  *
-         mp(handler, "basic_type", R("AZ","az","__") * R("09","AZ","az", "__")^0),
+         (V("Constant") + mp(handler, "basic_type", R("AZ","az","__") * R("09","AZ","az", "__")^0)),
 
       Identifier = mp(handler, "default", identifier / show) ,
 
@@ -239,6 +245,7 @@ local grammar = visualizers.newgrammar(
          V("Literal") +
          V("Operator") +
          V("Separator") +
+         V("Constant") +
          V("Identifier") +
          V("BasicType") +
          V("Modifier") +
