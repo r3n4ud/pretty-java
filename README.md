@@ -1,6 +1,6 @@
 <!--- coding: utf-8; fill-column: 80 --->
 # pretty-java: a ConTeXt MkIV java syntax highlighting third party module
-![pretty-java](https://raw.github.com/nibua-r/pretty-java/rework-jls-se7/pretty-java_greeter.png)
+![pretty-java](https://raw.github.com/nibua-r/pretty-java/master/pretty-java_greeter.png)
 
 * [Homepage](https://github.com/nibua-r/pretty-java#readme)
 * [Issues](https://github.com/nibua-r/pretty-java/issues)
@@ -35,7 +35,7 @@ public class HelloWorld {
 ```
 
 A sample document is available
-[here](https://github.com/nibua-r/pretty-java/blob/rework-jls-se7/doc/context/third/pretty-java/test.pdf?raw=true).
+[here](https://github.com/nibua-r/pretty-java/blob/master/doc/context/third/pretty-java/test.pdf?raw=true).
 
 ## Requirements
 
