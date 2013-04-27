@@ -33,6 +33,9 @@ public class HelloWorld {
 \stoptext
 ```
 
+A sample document is available
+[here](https://github.com/nibua-r/pretty-java/blob/rework-jls-se7/doc/context/third/pretty-java/test.pdf?raw=true).
+
 ## Requirements
 
 You'll need the [ConTeXt Standalone distribution](http://wiki.contextgarden.net/ConTeXt_Standalone).
