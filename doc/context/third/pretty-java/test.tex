@@ -1,10 +1,19 @@
 \usemodule[t-pretty-java]
 
-\setupbodyfont[10pt]
+\setuppapersize[A4][A4] % this is the default and may be omitted
+\setuplayout[backspace=20mm,
+    width=160mm,
+    topspace=20mm,
+    header=0mm,
+    footer=0mm,
+    height=250mm]
+
+\setupbodyfont[8pt]
+\setuplinenumbering[location=text]
 
 \starttext
 
-\starttyping[option=java]
+\starttyping[option=java,numbering=line]
 package io.renaud.ligo.text_demo;
 
 import android.app.Service;
