@@ -1,5 +1,5 @@
 -- Copyright 2013 Renaud Aubin <root@renaud.io>
--- Time-stamp: <2013-04-27 13:52:48>
+-- Time-stamp: <2013-04-27 14:12:04>
 -- This program is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
 -- the Free Software Foundation, either version 3 of the License, or
@@ -207,7 +207,7 @@ local grammar = visualizers.newgrammar(
          ( mp(handler, "basic_type", basic_type) +
            mp(handler, "import_id", identifier) +
            mp(handler, "keyword", P("void"))
-         ) *
+         ) * mp(handler, "default", P("[") * (1 - P("]"))^0 * P("]") )^0 *
          V("whitespace")  *
          (V("Constant") + mp(handler, "basic_type", R("AZ","az","__") * R("09","AZ","az", "__")^0)),
 
