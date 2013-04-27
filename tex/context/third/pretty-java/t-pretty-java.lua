@@ -1,5 +1,5 @@
 -- Copyright 2013 Renaud Aubin <root@renaud.io>
--- Time-stamp: <2013-04-27 14:12:04>
+-- Time-stamp: <2013-04-27 14:27:30>
 -- This program is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
 -- the Free Software Foundation, either version 3 of the License, or
@@ -169,7 +169,8 @@ local grammar = visualizers.newgrammar(
 
       Type = mp(handler, "import_id", identifier),
 
-      TypeList = V("default"),
+      TypeList = mp(handler, "import_id", identifier) *
+         ( V("optionalwhitespace") * mp(handler, "default", P(",")) * V("optionalwhitespace") * mp(handler, "import_id", identifier) )^0,
 
       -- TypeParameter = mp(handler, "import_id", identifier) *
       --    ( V("whitespace")^1 * mp(handler, "keyword", P("extends")) * V("whitespace")^1 *
@@ -179,15 +180,13 @@ local grammar = visualizers.newgrammar(
          (P(",") * V("whitespace")^1 * mp(handler, "import_id", identifier))^0 *
          P(">"),
 
-      ClassDeclaration = (V("Modifier") * V("whitespace"))^0 *
-         mp(handler, "keyword", P("class")) * V("whitespace") *
+      ClassOrInterfaceDeclaration = (V("Modifier") * V("whitespace"))^0 *
+         mp(handler, "keyword", P("class") + P("interface")) * V("whitespace") *
          mp(handler, "import_id", identifier) * V("whitespace") *
          -- V("TypeParameters")^-1 *
-         (mp(handler, "keyword", P("extends")) * V("whitespace") *
-          V("Type"))^-1 * V("whitespace") *
-         (mp(handler, "keyword", P("implements")) * V("whitespace")^1 )^-1, -- *
-          --     V("TypeList"),
-
+         ( mp(handler, "keyword", P("extends")) * V("whitespace") * V("Type") )^-1 *
+         V("optionalwhitespace") *
+         ( mp(handler, "keyword", P("implements")) * V("whitespace") * V("TypeList") )^-1,
 
       -- ImportDeclaration:
       --    import [static] Identifier { . Identifier } [. *] ;
@@ -240,7 +239,7 @@ local grammar = visualizers.newgrammar(
          V("FieldDeclaration") +
          V("Package") +
          V("ImportDeclaration") +
-         V("ClassDeclaration") +
+         V("ClassOrInterfaceDeclaration") +
          V("Comment") +
          V("Literal") +
          V("Operator") +
